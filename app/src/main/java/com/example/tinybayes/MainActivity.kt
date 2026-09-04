@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             val classifier = remember {
-                DiseaseClassifier(this)
+                DiseaseClassifier(applicationContext)
             }
 
             var bitmap by remember {

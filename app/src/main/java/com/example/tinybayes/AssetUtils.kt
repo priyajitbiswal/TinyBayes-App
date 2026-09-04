@@ -1,0 +1,36 @@
+package com.example.tinybayes
+
+import android.content.Context
+import java.io.File
+import java.io.FileOutputStream
+
+fun assetFilePath(
+    context: Context,
+    assetName: String
+): String {
+
+    val file =
+        File(
+            context.filesDir,
+            assetName
+        )
+
+    if (
+        file.exists() &&
+        file.length() > 0
+    ) {
+        return file.absolutePath
+    }
+
+    context.assets.open(assetName)
+        .use { input ->
+
+            FileOutputStream(file)
+                .use { output ->
+
+                    input.copyTo(output)
+                }
+        }
+
+    return file.absolutePath
+}

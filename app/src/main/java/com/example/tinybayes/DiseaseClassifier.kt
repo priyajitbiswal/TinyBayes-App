@@ -2,119 +2,148 @@ package com.example.tinybayes
 
 import android.content.Context
 import android.graphics.Bitmap
-import com.google.gson.Gson
-import org.tensorflow.lite.Interpreter
+import android.util.Log
+import org.pytorch.IValue
+import org.pytorch.Module
+import org.pytorch.torchvision.TensorImageUtils
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.exp
 
-class DiseaseClassifier(context: Context) {
+class DiseaseClassifier(
+    private val context: Context
+) {
 
-    private val mobilenet: Interpreter
+    companion object {
+        private const val FEATURE_SIZE = 576
+        private const val NUM_CLASSES = 3
+    }
 
-    private val healthy: FloatArray
-    private val cssvd: FloatArray
-    private val anthracnose: FloatArray
+    private val module: Module
+
+    // beta[class][feature]
+    private val betas: Array<FloatArray>
+
+    private val classNames = arrayOf(
+        "Anthracnose",
+        "CSSVD",
+        "Healthy"
+    )
+
+    private val mean = floatArrayOf(
+        0.485f,
+        0.456f,
+        0.406f
+    )
+
+    private val std = floatArrayOf(
+        0.229f,
+        0.224f,
+        0.225f
+    )
 
     init {
 
-        mobilenet = Interpreter(
-            FileUtil.loadMappedFile(
+        module = Module.load(
+            assetFilePath(
                 context,
-                "mobilenet_v3_small.tflite"
+                "mobilenet_feature_extractor.pt"
             )
         )
 
-        val json = context.assets
-            .open("jacobi_coefficients.json")
-            .bufferedReader()
-            .use { it.readText() }
+        betas = loadBetas()
+    }
 
-        val coeffs = Gson().fromJson(
-            json,
-            JacobiCoefficients::class.java
-        )
+    private fun loadBetas(): Array<FloatArray> {
 
-        healthy = coeffs.healthy
-            .map { it.toFloat() }
-            .toFloatArray()
+        val bytes = context.assets
+            .open("jacobi_betas.bin")
+            .readBytes()
 
-        cssvd = coeffs.cssvd
-            .map { it.toFloat() }
-            .toFloatArray()
+        val buffer = ByteBuffer
+            .wrap(bytes)
+            .order(ByteOrder.LITTLE_ENDIAN)
 
-        anthracnose = coeffs.anthracnose
-            .map { it.toFloat() }
-            .toFloatArray()
+        val result = Array(NUM_CLASSES) {
+            FloatArray(FEATURE_SIZE)
+        }
+
+        for (c in 0 until NUM_CLASSES) {
+
+            for (i in 0 until FEATURE_SIZE) {
+
+                result[c][i] = buffer.float
+            }
+        }
+
+        return result
     }
 
     fun predict(bitmap: Bitmap): String {
 
         val resized = Bitmap.createScaledBitmap(
-            bitmap.copy(Bitmap.Config.ARGB_8888, true),
+            bitmap,
             224,
             224,
             true
         )
 
-        val input = ByteBuffer.allocateDirect(
-            1 * 224 * 224 * 3 * 4
-        ).order(ByteOrder.nativeOrder())
+        val inputTensor =
+            TensorImageUtils.bitmapToFloat32Tensor(
+                resized,
+                mean,
+                std
+            )
 
-        for (y in 0 until 224) {
-            for (x in 0 until 224) {
+        val outputTensor =
+            module.forward(
+                IValue.from(inputTensor)
+            ).toTensor()
 
-                val pixel = resized.getPixel(x, y)
+        val features =
+            outputTensor.dataAsFloatArray
 
-                val r = ((pixel shr 16) and 0xFF) / 255f
-                val g = ((pixel shr 8) and 0xFF) / 255f
-                val b = (pixel and 0xFF) / 255f
+        if (features.size != FEATURE_SIZE) {
 
-                val rn = (r - 0.485f) / 0.229f
-                val gn = (g - 0.456f) / 0.224f
-                val bn = (b - 0.406f) / 0.225f
+            throw RuntimeException(
+                "Expected $FEATURE_SIZE features but got ${features.size}"
+            )
+        }
 
-                input.putFloat(rn)
-                input.putFloat(gn)
-                input.putFloat(bn)
+        var bestScore = Double.NEGATIVE_INFINITY
+        var bestClass = 0
+
+        for (c in 0 until NUM_CLASSES) {
+
+            var linear = 0.0
+
+            for (i in 0 until FEATURE_SIZE) {
+
+                linear +=
+                    features[i].toDouble() *
+                            betas[c][i].toDouble()
+            }
+
+            val score = exp(linear)
+
+            if (score > bestScore) {
+
+                bestScore = score
+                bestClass = c
             }
         }
 
-        input.rewind()
+//        Log.d(
+//            "TinyBayes",
+//            """
+//            Features=${features.size}
+//            Anthracnose=${exp(features.zip(betas[0]) { f, b -> f.toDouble() * b.toDouble() }.sum())}
+//            CSSVD=${exp(features.zip(betas[1]) { f, b -> f.toDouble() * b.toDouble() }.sum())}
+//            Healthy=${exp(features.zip(betas[2]) { f, b -> f.toDouble() * b.toDouble() }.sum())}
+//            Prediction=${classNames[bestClass]}
+//            """.trimIndent()
+//        )
 
-        val output = Array(1) {
-            FloatArray(576)
-        }
-
-        mobilenet.run(input, output)
-
-        val features = output[0]
-
-        val healthyScore = dot(features, healthy)
-        val cssvdScore = dot(features, cssvd)
-        val anthracnoseScore = dot(features, anthracnose)
-
-        return when {
-            healthyScore >= cssvdScore &&
-                    healthyScore >= anthracnoseScore -> "Healthy"
-
-            cssvdScore >= healthyScore &&
-                    cssvdScore >= anthracnoseScore -> "CSSVD"
-
-            else -> "Anthracnose"
-        }
-    }
-
-    private fun dot(
-        a: FloatArray,
-        b: FloatArray
-    ): Float {
-
-        var sum = 0f
-
-        for (i in a.indices) {
-            sum += a[i] * b[i]
-        }
-
-        return sum
+        return classNames[bestClass]
     }
 }
