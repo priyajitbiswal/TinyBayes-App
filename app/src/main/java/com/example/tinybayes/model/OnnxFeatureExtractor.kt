@@ -91,8 +91,18 @@ class OnnxFeatureExtractor(context: Context) {
 
     private fun preprocess(bitmap: Bitmap): FloatArray {
 
+        val size = minOf(bitmap.width, bitmap.height)
+        val xOffset = (bitmap.width - size) / 2
+        val yOffset = (bitmap.height - size) / 2
+
+        val squareBitmap = if (bitmap.width == bitmap.height) {
+            bitmap
+        } else {
+            Bitmap.createBitmap(bitmap, xOffset, yOffset, size, size)
+        }
+
         val resized = Bitmap.createScaledBitmap(
-            bitmap,
+            squareBitmap,
             224,
             224,
             true
@@ -152,7 +162,10 @@ class OnnxFeatureExtractor(context: Context) {
             return input
 
         } finally {
-            if (!bitmap.sameAs(resized)) {
+            if (squareBitmap !== bitmap) {
+                squareBitmap.recycle()
+            }
+            if (resized !== bitmap && resized !== squareBitmap) {
                 resized.recycle()
             }
         }

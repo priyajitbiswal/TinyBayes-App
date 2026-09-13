@@ -6,7 +6,8 @@ import kotlin.math.exp
 
 data class PredictionResult(
     val className: String,
-    val score: Double
+    val confidence: Double,
+    val probabilities: Map<String, Double>
 )
 
 class JacobiModel(
@@ -58,21 +59,38 @@ class JacobiModel(
             "Expected 576 features, got ${features.size}"
         }
 
-        var bestClass: String? = null
-        var bestScore = Double.NEGATIVE_INFINITY
+        val dotProducts = mutableMapOf<String, Double>()
+        var maxDot = Double.NEGATIVE_INFINITY
 
         for ((className, beta) in coefficients) {
-
             var dotProduct = 0.0
-
             for (i in 0 until 576) {
                 dotProduct += features[i].toDouble() * beta[i].toDouble()
             }
+            dotProducts[className] = dotProduct
+            if (dotProduct > maxDot) {
+                maxDot = dotProduct
+            }
+        }
 
-            val score = exp(dotProduct)
+        var sumExp = 0.0
+        val expScores = mutableMapOf<String, Double>()
 
-            if (score > bestScore) {
-                bestScore = score
+        for ((className, dot) in dotProducts) {
+            val expVal = exp(dot - maxDot)
+            expScores[className] = expVal
+            sumExp += expVal
+        }
+
+        val probabilities = mutableMapOf<String, Double>()
+        var bestClass: String? = null
+        var bestProb = -1.0
+
+        for ((className, expVal) in expScores) {
+            val prob = if (sumExp > 0.0) expVal / sumExp else 0.0
+            probabilities[className] = prob
+            if (prob > bestProb) {
+                bestProb = prob
                 bestClass = className
             }
         }
@@ -80,7 +98,8 @@ class JacobiModel(
         return PredictionResult(
             className = bestClass
                 ?: error("Unable to determine prediction"),
-            score = bestScore
+            confidence = bestProb,
+            probabilities = probabilities
         )
     }
 
