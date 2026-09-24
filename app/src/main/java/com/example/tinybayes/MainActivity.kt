@@ -1,5 +1,6 @@
 package com.example.tinybayes
 
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ColorSpace
@@ -58,6 +59,7 @@ import coil3.compose.AsyncImage
 import com.example.tinybayes.inference.TinyBayesClassifier
 import com.example.tinybayes.ui.theme.TinyBayesTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -71,6 +73,8 @@ class MainActivity : ComponentActivity() {
     private var probabilities by mutableStateOf<Map<String, Double>>(emptyMap())
     private var isPredicting by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
+
+    private var predictionJob: Job? = null
 
     private lateinit var classifier: TinyBayesClassifier
 
@@ -91,6 +95,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         enableEdgeToEdge()
 
         classifier = TinyBayesClassifier(this)
@@ -108,9 +113,15 @@ class MainActivity : ComponentActivity() {
                         isPredicting = isPredicting,
                         errorMessage = errorMessage,
                         onCropSelected = { crop ->
-                            selectedCrop = crop
-                            selectedImageUri?.let { uri ->
-                                runPrediction(uri, crop)
+                            if (crop != selectedCrop) {
+                                predictionJob?.cancel()
+                                selectedCrop = crop
+                                selectedImageUri = null
+                                prediction = null
+                                confidence = null
+                                probabilities = emptyMap()
+                                errorMessage = null
+                                isPredicting = false
                             }
                         },
                         onChooseImage = {
@@ -190,13 +201,14 @@ class MainActivity : ComponentActivity() {
         uri: Uri,
         crop: String
     ) {
+        predictionJob?.cancel()
         isPredicting = true
         prediction = null
         confidence = null
         probabilities = emptyMap()
         errorMessage = null
 
-        lifecycleScope.launch(Dispatchers.Default) {
+        predictionJob = lifecycleScope.launch(Dispatchers.Default) {
             try {
                 val bitmap = loadBitmapWithExif(uri)
 
@@ -224,6 +236,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        predictionJob?.cancel()
         classifier.close()
         super.onDestroy()
     }
