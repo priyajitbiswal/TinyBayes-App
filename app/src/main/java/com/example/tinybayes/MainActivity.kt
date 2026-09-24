@@ -636,8 +636,9 @@ fun TinyBayesScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
+                    val isMismatch = errorMessage.contains("does not appear", ignoreCase = true)
                     Text(
-                        text = "Error Occurred",
+                        text = if (isMismatch) "Crop Mismatch" else "Error Occurred",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onErrorContainer,
                         fontWeight = FontWeight.Bold

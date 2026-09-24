@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import com.example.tinybayes.model.JacobiModel
 import com.example.tinybayes.model.OnnxFeatureExtractor
 
+class CropMismatchException(message: String) : Exception(message)
+
 data class TinyBayesPrediction(
     val className: String,
     val confidence: Double,
@@ -15,6 +17,11 @@ data class TinyBayesPrediction(
 class TinyBayesClassifier(context: Context) {
 
     private val featureExtractor = OnnxFeatureExtractor(context)
+
+    private val cropIdentifierModel = JacobiModel(
+        context,
+        "models/crop_identifier_coefficients.json"
+    )
 
     private val jacobiModels = mapOf(
         "Cocoa" to JacobiModel(
@@ -50,6 +57,14 @@ class TinyBayesClassifier(context: Context) {
             )
 
         val features = featureExtractor.extractFeatures(bitmap)
+
+        // Pre-prediction check: verify leaf belongs to the selected crop
+        val cropCheck = cropIdentifierModel.predict(features)
+        if (!cropCheck.className.equals(crop, ignoreCase = true)) {
+            throw CropMismatchException(
+                "This image does not appear to belong to a $crop leaf. Kindly select the correct leaf image."
+            )
+        }
 
         val result = jacobiModel.predict(features)
 
