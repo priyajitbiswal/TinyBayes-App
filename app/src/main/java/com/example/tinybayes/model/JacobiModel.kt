@@ -7,7 +7,8 @@ import kotlin.math.exp
 data class PredictionResult(
     val className: String,
     val confidence: Double,
-    val probabilities: Map<String, Double>
+    val probabilities: Map<String, Double>,
+    val remedy: String? = null
 )
 
 class JacobiModel(
@@ -16,6 +17,7 @@ class JacobiModel(
 ) {
 
     private val coefficients: Map<String, FloatArray>
+    private val remedies: Map<String, String>
 
     init {
         val jsonText = context.assets
@@ -26,12 +28,23 @@ class JacobiModel(
         val json = JSONObject(jsonText)
 
         val loadedCoefficients = mutableMapOf<String, FloatArray>()
+        val loadedRemedies = mutableMapOf<String, String>()
 
         val keys = json.keys()
 
         while (keys.hasNext()) {
             val className = keys.next()
-            val array = json.getJSONArray(className)
+            val classObj = json.optJSONObject(className)
+
+            val array = if (classObj != null) {
+                val remedyText = classObj.optString("remedy", "")
+                if (remedyText.isNotEmpty()) {
+                    loadedRemedies[className] = remedyText
+                }
+                classObj.getJSONArray("beta")
+            } else {
+                json.getJSONArray(className)
+            }
 
             require(array.length() == 576) {
                 "Class '$className' has ${array.length()} coefficients. Expected 576."
@@ -51,6 +64,7 @@ class JacobiModel(
         }
 
         coefficients = loadedCoefficients
+        remedies = loadedRemedies
     }
 
     fun predict(features: FloatArray): PredictionResult {
@@ -99,7 +113,8 @@ class JacobiModel(
             className = bestClass
                 ?: error("Unable to determine prediction"),
             confidence = bestProb,
-            probabilities = probabilities
+            probabilities = probabilities,
+            remedy = remedies[bestClass] ?: ""
         )
     }
 

@@ -8,7 +8,8 @@ import com.example.tinybayes.model.OnnxFeatureExtractor
 data class TinyBayesPrediction(
     val className: String,
     val confidence: Double,
-    val probabilities: Map<String, Double>
+    val probabilities: Map<String, Double>,
+    val remedy: String? = null
 )
 
 class TinyBayesClassifier(context: Context) {
@@ -55,7 +56,8 @@ class TinyBayesClassifier(context: Context) {
         return TinyBayesPrediction(
             className = result.className,
             confidence = result.confidence,
-            probabilities = result.probabilities
+            probabilities = result.probabilities,
+            remedy = result.remedy
         )
     }
 

@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -44,6 +45,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,6 +73,7 @@ class MainActivity : ComponentActivity() {
     private var prediction by mutableStateOf<String?>(null)
     private var confidence by mutableStateOf<Double?>(null)
     private var probabilities by mutableStateOf<Map<String, Double>>(emptyMap())
+    private var remedy by mutableStateOf<String?>(null)
     private var isPredicting by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
 
@@ -86,6 +89,7 @@ class MainActivity : ComponentActivity() {
             prediction = null
             confidence = null
             probabilities = emptyMap()
+            remedy = null
             errorMessage = null
 
             if (uri != null) {
@@ -110,6 +114,7 @@ class MainActivity : ComponentActivity() {
                         prediction = prediction,
                         confidence = confidence,
                         probabilities = probabilities,
+                        remedy = remedy,
                         isPredicting = isPredicting,
                         errorMessage = errorMessage,
                         onCropSelected = { crop ->
@@ -120,6 +125,7 @@ class MainActivity : ComponentActivity() {
                                 prediction = null
                                 confidence = null
                                 probabilities = emptyMap()
+                                remedy = null
                                 errorMessage = null
                                 isPredicting = false
                             }
@@ -206,6 +212,7 @@ class MainActivity : ComponentActivity() {
         prediction = null
         confidence = null
         probabilities = emptyMap()
+        remedy = null
         errorMessage = null
 
         predictionJob = lifecycleScope.launch(Dispatchers.Default) {
@@ -221,6 +228,7 @@ class MainActivity : ComponentActivity() {
                     prediction = result.className
                     confidence = result.confidence
                     probabilities = result.probabilities
+                    remedy = result.remedy
                     isPredicting = false
                 }
 
@@ -250,6 +258,7 @@ fun TinyBayesScreen(
     prediction: String?,
     confidence: Double?,
     probabilities: Map<String, Double>,
+    remedy: String? = null,
     isPredicting: Boolean,
     errorMessage: String?,
     onCropSelected: (String) -> Unit,
@@ -262,6 +271,8 @@ fun TinyBayesScreen(
         "Tomato",
         "Cocoa"
     )
+
+    var showRemedyDialog by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
 
@@ -509,7 +520,107 @@ fun TinyBayesScreen(
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            if (!remedy.isNullOrBlank()) {
+                                showRemedyDialog = true
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("View Recommended Remedy")
+                    }
                 }
+            }
+
+            if (showRemedyDialog && !remedy.isNullOrBlank()) {
+                val formattedCrop = selectedCrop
+                val formattedDiseaseName = prediction.replace('_', ' ')
+
+                AlertDialog(
+                    onDismissRequest = { showRemedyDialog = false },
+                    title = {
+                        Column {
+                            Text(
+                                text = "Treatment & Remedy",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "$formattedCrop: $formattedDiseaseName",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        }
+                    },
+                    text = {
+                        val sections = remedy.split("\n")
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            sections.forEach { line ->
+                                if (line.isNotBlank()) {
+                                    val parts = line.split(":", limit = 2)
+                                    if (parts.size == 2) {
+                                        Card(
+                                            colors = CardDefaults.cardColors(
+                                                containerColor = MaterialTheme.colorScheme.surface
+                                            ),
+                                            shape = RoundedCornerShape(10.dp)
+                                        ) {
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(12.dp)
+                                            ) {
+                                                Text(
+                                                    text = parts[0].trim().removePrefix("• "),
+                                                    style = MaterialTheme.typography.labelLarge.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.primary
+                                                    )
+                                                )
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text(
+                                                    text = parts[1].trim(),
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    lineHeight = 20.sp,
+                                                    color = MaterialTheme.colorScheme.onSurface
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        Text(
+                                            text = line,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            lineHeight = 20.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = { showRemedyDialog = false },
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Close")
+                        }
+                    },
+                    shape = RoundedCornerShape(20.dp)
+                )
             }
 
         } else if (errorMessage != null) {
