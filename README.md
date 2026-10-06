@@ -93,12 +93,7 @@ TinyBayes-App/
 │   │   │   ├── mobilenet_v3_small_features.onnx       # Backbone ONNX graph
 │   │   │   ├── mobilenet_v3_small_features.onnx.data  # Model weight tensors
 │   │   │   ├── crop_identifier_coefficients.json      # Gatekeeper crop verifier
-│   │   │   ├── jacobi_coefficients.json               # Unified 5-crop coefficients & remedies
-│   │   │   ├── cocoa/jacobi_coefficients.json         # Cocoa modular head
-│   │   │   ├── cotton/jacobi_coefficients.json        # Cotton modular head
-│   │   │   ├── potato/jacobi_coefficients.json        # Potato modular head
-│   │   │   ├── rice/jacobi_coefficients.json          # Rice modular head
-│   │   │   └── tomato/jacobi_coefficients.json        # Tomato modular head
+│   │   │   └── jacobi_coefficients.json               # Unified 5-crop coefficients & remedies
 │   │   ├── java/com/example/tinybayes/
 │   │   │   ├── MainActivity.kt                        # Jetpack Compose UI & image loading
 │   │   │   ├── model/
@@ -109,7 +104,6 @@ TinyBayes-App/
 │   │   │   └── ui/theme/                              # Material 3 theme definitions
 │   │   └── AndroidManifest.xml
 │   └── build.gradle.kts                               # Dependencies & ABI splits configuration
-├── CROP_DISEASE_REMEDIES.md                           # Comprehensive 27-class treatments guide
 ├── gradle/                                            # Gradle wrapper & version catalogs
 ├── gradlew.bat / gradlew                              # Gradle build scripts
 └── README.md
