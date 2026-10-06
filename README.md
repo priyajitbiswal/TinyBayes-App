@@ -73,38 +73,43 @@ Validated image-by-image on disk comparing the Android inference pipeline agains
 - **Engine**: Microsoft ONNX Runtime for Android (`com.microsoft.onnxruntime:onnxruntime-android`).
 - **Output**: 576-dimensional feature embedding vector.
 
-### 2. Jacobi-DMR Classifier
-- Pre-computed coefficients ($\beta \in \mathbb{R}^{576}$) loaded from JSON assets per crop.
+### 2. Crop Verification & Disease Inference
+- **Gatekeeper Crop Identifier**: Pre-prediction model (`crop_identifier_coefficients.json`) that verifies whether the photographed leaf matches the crop selected by the user.
+- **Jacobi-DMR Classifier**: Closed-form Bayesian coefficient heads ($\beta \in \mathbb{R}^{576}$) loaded with integrated agronomic remedies from JSON assets.
 - Computes dot-product logits for each class: $z_c = \mathbf{x}^T \beta_c$.
 - Computes calibrated probabilities via Softmax:
   $$P(\text{class } c) = \frac{\exp(z_c - \max_j z_j)}{\sum_k \exp(z_k - \max_j z_j)}$$
+- If the diagnosed leaf is diseased, the corresponding treatment protocol is displayed directly from the coefficients model.
 
 ---
 
 ## Project Structure
 
 ```
-AndroidApps/
+TinyBayes-App/
 ├── app/
 │   ├── src/main/
 │   │   ├── assets/models/
 │   │   │   ├── mobilenet_v3_small_features.onnx       # Backbone ONNX graph
 │   │   │   ├── mobilenet_v3_small_features.onnx.data  # Model weight tensors
-│   │   │   ├── potato/jacobi_coefficients.json        # Potato coefficients
-│   │   │   ├── cotton/jacobi_coefficients.json        # Cotton coefficients
-│   │   │   ├── rice/jacobi_coefficients.json          # Rice coefficients
-│   │   │   ├── tomato/jacobi_coefficients.json        # Tomato coefficients
-│   │   │   └── cocoa/jacobi_coefficients.json         # Cocoa coefficients
+│   │   │   ├── crop_identifier_coefficients.json      # Gatekeeper crop verifier
+│   │   │   ├── jacobi_coefficients.json               # Unified 5-crop coefficients & remedies
+│   │   │   ├── cocoa/jacobi_coefficients.json         # Cocoa modular head
+│   │   │   ├── cotton/jacobi_coefficients.json        # Cotton modular head
+│   │   │   ├── potato/jacobi_coefficients.json        # Potato modular head
+│   │   │   ├── rice/jacobi_coefficients.json          # Rice modular head
+│   │   │   └── tomato/jacobi_coefficients.json        # Tomato modular head
 │   │   ├── java/com/example/tinybayes/
 │   │   │   ├── MainActivity.kt                        # Jetpack Compose UI & image loading
 │   │   │   ├── model/
 │   │   │   │   ├── OnnxFeatureExtractor.kt            # Image preprocessing & ONNX execution
-│   │   │   │   └── JacobiModel.kt                     # Jacobi-DMR dot products & Softmax
+│   │   │   │   └── JacobiModel.kt                     # Jacobi-DMR dot products, Softmax & Remedies
 │   │   │   ├── inference/
-│   │   │   │   └── TinyBayesClassifier.kt             # Crop model router & coordinator
+│   │   │   │   └── TinyBayesClassifier.kt             # Crop verification router & coordinator
 │   │   │   └── ui/theme/                              # Material 3 theme definitions
 │   │   └── AndroidManifest.xml
 │   └── build.gradle.kts                               # Dependencies & ABI splits configuration
+├── CROP_DISEASE_REMEDIES.md                           # Comprehensive 27-class treatments guide
 ├── gradle/                                            # Gradle wrapper & version catalogs
 ├── gradlew.bat / gradlew                              # Gradle build scripts
 └── README.md

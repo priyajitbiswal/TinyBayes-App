@@ -75,15 +75,18 @@ This document provides agricultural management strategies, cultural practices, b
 
 ---
 
-### 2.3 Herbicide Growth Damage
-- **Symptoms**: Leaf strapped into fan-shaped/feathered forms; parallel veins; blistering and downward twisting of petioles; bud suppression (commonly caused by synthetic auxin drift like 2,4-D or dicamba).
-- **Notice**: Abiotic chemical injury; **cannot be reversed with pesticides**. Nutritional/hormonal recovery sprays do not restore damaged leaves.
-- **Agronomic Recovery & Management**:
-  - Check the apical terminal bud: If the terminal bud is alive and newly formed leaves appear normal, the plant will outgrow moderate injury.
-  - Ensure steady soil moisture through regulated irrigation to prevent moisture stress (avoid waterlogging).
-  - Supply light foliar nutrition (1% 19:19:19 NPK or 1% urea) once new growth starts to assist canopy rebuilding.
-  - Manage as a late-planted crop: Adjust pest scouting and harvest scheduling to compensate for delayed boll maturity.
-  - Clean and flush all spray equipment thoroughly before spraying future fields.
+### 2.3 Fusarium Wilt (*Fusarium oxysporum f. sp. vasinfectum*)
+- **Symptoms**: Soil-borne vascular wilt disease. Yellowing and browning along leaf margins starting from lower leaves; dark brown to black discoloration of xylem vascular rings in stems and taproots; gradual wilting and seedling/plant death.
+- **Cultural & Soil Sanitation**:
+  - Rotate crops for 3–4 years with non-host crops (maize, sorghum, pearl millet).
+  - Deep summer ploughing to solarize soil and reduce fungal chlamydospores.
+  - Collect and burn or bury all diseased plant residues; avoid spreading contaminated soil via tools.
+  - Cultivate certified wilt-resistant or tolerant hybrid cotton cultivars.
+- **Biological & Organic Control**:
+  - Apply bio-control agents *Trichoderma viride* or *Pseudomonas fluorescens* (2.5 kg/ha enriched in 250 kg well-decomposed farmyard manure/compost) at sowing or before planting.
+- **Chemical Control & Drenching**:
+  - **Seed Treatment**: Treat seeds with Carbendazim 50% WP (2 g/kg seed) or Carboxin + Thiram (2.5 g/kg seed).
+  - **Soil Drenching**: At early appearance of localized wilting, drench the root zone of affected plants and immediate borders with Carbendazim 50% WP (1 g/L) or Copper Oxychloride 50% WP (2.5 g/L).
 
 ---
 
@@ -123,7 +126,7 @@ This document provides agricultural management strategies, cultural practices, b
 
 ---
 
-### 2.7 Healthy Leaf
+### 2.7 Healthy
 - **Status**: Leaf displays normal green chlorophyll pigmentation and healthy physiological vigor.
 - **Action**: No remedy required. Maintain optimal irrigation, balanced fertilization, and routine pest scouting.
 
@@ -216,18 +219,24 @@ This document provides agricultural management strategies, cultural practices, b
 
 ---
 
-### 4.5 Narrow Brown Spot (*Cercospora janseana*)
-- **Symptoms**: Short, linear, narrow dark brown lesions (2–10 mm long, 1 mm wide) running parallel to leaf veins; causes premature leaf death and lodging late in the season.
-- **Cultural & Chemical Control**:
-  - Apply recommended potassium fertilizer (potash deficiency drastically increases susceptibility).
-  - Practice field sanitation and crop rotation where the disease is persistent.
-  - Spray Propiconazole 25% EC (1 ml/L) or Azoxystrobin 23% SC (1 ml/L) between late panicle differentiation and early heading.
+### 4.5 Sheath Blight (*Rhizoctonia solani*)
+- **Symptoms**: Oval to irregular greenish-gray, water-soaked lesions on leaf sheaths near the water level; lesions enlarge with grayish-white centers and distinct brown borders; causes sheath and leaf blight ("snapping" or lodging of tillers).
+- **Cultural & Agronomic Control**:
+  - Avoid excessive nitrogen fertilizer and apply in split doses with balanced potash (potassium strengthens culm resistance).
+  - Provide optimal seedling spacing (20 × 15 cm) for cross-canopy aeration and light penetration.
+  - Drain excess water and skim off floating sclerotia during final puddled field preparation.
+- **Biological Control**:
+  - Spray *Pseudomonas fluorescens* (1 kg/ha) or *Trichoderma harzianum* at tillering and panicle initiation stages.
+- **Chemical Control**:
+  - Spray Hexaconazole 5% SC (2 ml/L), Validamycin 3% L (2.5 ml/L), Thifluzamide 24% SC (0.75 ml/L), or Azoxystrobin 18.2% + Difenoconazole 11.4% SC (1 ml/L) directed at the plant base/sheaths upon initial lesion detection. Repeat after 15 days if humid conditions persist.
 
 ---
 
 ### 4.6 Healthy
 - **Status**: Rice leaf shows vibrant green color, strong turgidity, and no signs of bacterial or fungal blights.
 - **Action**: No remedy required. Maintain optimal water levels, balanced fertilization, and regular field scouting.
+
+*(Note: Narrow Brown Spot is documented in the archive reference for legacy studio models).*
 
 ---
 
@@ -288,7 +297,7 @@ This document provides agricultural management strategies, cultural practices, b
 
 ---
 
-### 5.5 Septoria Leaf Spot (*Septoria lycopersici*)
+### 5.5 Septoria Spot (*Septoria lycopersici*)
 - **Symptoms**: Numerous small (1.5–3 mm) circular spots with dark brown margins and sunken grayish-white centers, peppered with tiny black fruiting specks (pycnidia); leaves yellow and wither.
 - **Cultural & Preventive Control**:
   - Strip off all lower infected leaves as soon as first spots appear.
@@ -301,32 +310,7 @@ This document provides agricultural management strategies, cultural practices, b
 
 ---
 
-### 5.6 Spider Mites (*Tetranychus urticae*)
-- **Symptoms**: Fine pale yellow or white stippling on the upper leaf surface; foliage becomes bronzed, dry, and papery; fine silken webbing on leaf undersides and shoot tips.
-- **Cultural & Physical Control**:
-  - Spray undersides of leaves with a forceful stream of water to dislodge mites and destroy webbing.
-  - Keep plants properly irrigated; dry, dusty conditions promote rapid mite outbreaks.
-  - Remove heavily infested leaves, bag them, and destroy them immediately.
-- **Biological Control**:
-  - Release predatory mites (*Phytoseiulus persimilis* or *Neoseiulus californicus*).
-  - Spray Neem oil (1–2% concentration) or insecticidal soaps (potassium salts of fatty acids), ensuring full coverage of leaf undersides.
-- **Chemical Control (Miticides)**:
-  - Spiromesifen 22.9% SC (1 ml/L), Abamectin 1.9% EC (0.5 ml/L), or Bifenazate 50% SC (0.5 ml/L).
-  - **Avoid broad-spectrum synthetic pyrethroids** (e.g. cypermethrin) which kill beneficial predatory mites and cause explosive resurgence.
-
----
-
-### 5.7 Target Spot (*Corynespora cassiicola*)
-- **Symptoms**: Brown circular lesions that develop pinpoint concentric rings; leaves yellow and drop prematurely; sunken lesions with light brown centers on green and ripe fruit.
-- **Cultural & Chemical Control**:
-  - Avoid overhead irrigation and promote rapid canopy drying with wider row spacing (18–24 inches).
-  - Prune lower leaves to reduce relative humidity near the soil.
-  - Spray Chlorothalonil 75% WP (2 g/L) or Mancozeb (2 g/L) preventively.
-  - Apply Azoxystrobin + Difenoconazole (1 ml/L), Fluxapyroxad + Pyraclostrobin, or Boscalid upon disease detection.
-
----
-
-### 5.8 Tomato Mosaic Virus (ToMV)
+### 5.6 Tomato Mosaic Virus (Mosaic_Virus / ToMV)
 - **Symptoms**: Light and dark green mosaic or mottling on leaves; leaf distortion, blistering, and "shoestring" or "fern-like" leaf malformations; plant stunting and internal browning of fruit.
 - **Transmission**: Highly stable virus mechanically transmitted by hands, tools, clothing, grafting, and tobacco products.
 - **Notice**: Viral infection; **no chemical cure** exists. Strict hygiene and sanitation are mandatory.
@@ -340,7 +324,7 @@ This document provides agricultural management strategies, cultural practices, b
 
 ---
 
-### 5.9 Tomato Yellow Leaf Curl Virus (TYLCV)
+### 5.7 Tomato Yellow Leaf Curl Virus (Yellow_Virus / TYLCV)
 - **Symptoms**: Upward curling and cupping of leaf margins; severe yellowing (chlorosis) along margins and interveinal areas; reduced leaf size; severe plant stunting and flower abortion (no fruit set).
 - **Transmission**: Transmitted by the sweetpotato whitefly (*Bemisia tabaci*).
 - **Notice**: Viral infection; **no direct chemical cure**. Management centers on whitefly exclusion, vector suppression, and resistant hybrids.
@@ -357,6 +341,18 @@ This document provides agricultural management strategies, cultural practices, b
 
 ---
 
-### 5.10 Healthy
-- **Status**: Tomato foliage is deep green, vigorous, and free from blight lesions, mites, or viral curling.
+### 5.8 Healthy
+- **Status**: Tomato foliage is deep green, vigorous, and free from blight lesions or viral curling.
 - **Action**: No remedy required. Maintain optimal drip irrigation, staking, and routine pest scouting.
+
+---
+
+### 5.9 Supplementary / Legacy Studio Classes
+
+#### Spider Mites (*Tetranychus urticae*)
+- **Symptoms**: Fine pale yellow or white stippling on the upper leaf surface; foliage becomes bronzed, dry, and papery; fine silken webbing on leaf undersides and shoot tips.
+- **Control**: Spray Neem oil (1–2%), release predatory mites (*Phytoseiulus persimilis*), or apply Spiromesifen 22.9% SC (1 ml/L). Avoid broad-spectrum synthetic pyrethroids.
+
+#### Target Spot (*Corynespora cassiicola*)
+- **Symptoms**: Brown circular lesions that develop pinpoint concentric rings; leaves yellow and drop prematurely; sunken lesions with light brown centers on green and ripe fruit.
+- **Control**: Prune lower leaves; spray Chlorothalonil 75% WP (2 g/L) or Azoxystrobin + Difenoconazole (1 ml/L).

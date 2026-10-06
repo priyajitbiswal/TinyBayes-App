@@ -26,23 +26,28 @@ class TinyBayesClassifier(context: Context) {
     private val jacobiModels = mapOf(
         "Cocoa" to JacobiModel(
             context,
-            "models/cocoa/jacobi_coefficients.json"
+            "models/jacobi_coefficients.json",
+            "cocoa"
         ),
         "Potato" to JacobiModel(
             context,
-            "models/potato/jacobi_coefficients.json"
+            "models/jacobi_coefficients.json",
+            "potato"
         ),
         "Tomato" to JacobiModel(
             context,
-            "models/tomato/jacobi_coefficients.json"
+            "models/jacobi_coefficients.json",
+            "tomato"
         ),
         "Rice" to JacobiModel(
             context,
-            "models/rice/jacobi_coefficients.json"
+            "models/jacobi_coefficients.json",
+            "rice"
         ),
         "Cotton" to JacobiModel(
             context,
-            "models/cotton/jacobi_coefficients.json"
+            "models/jacobi_coefficients.json",
+            "cotton"
         )
     )
 

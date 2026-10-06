@@ -13,7 +13,8 @@ data class PredictionResult(
 
 class JacobiModel(
     context: Context,
-    coefficientPath: String
+    coefficientPath: String,
+    cropKey: String? = null
 ) {
 
     private val coefficients: Map<String, FloatArray>
@@ -25,7 +26,14 @@ class JacobiModel(
             .bufferedReader()
             .use { it.readText() }
 
-        val json = JSONObject(jsonText)
+        val rootJson = JSONObject(jsonText)
+        val json = if (cropKey != null) {
+            rootJson.optJSONObject(cropKey.lowercase())
+                ?: rootJson.optJSONObject(cropKey)
+                ?: throw IllegalArgumentException("Crop '$cropKey' not found in $coefficientPath")
+        } else {
+            rootJson
+        }
 
         val loadedCoefficients = mutableMapOf<String, FloatArray>()
         val loadedRemedies = mutableMapOf<String, String>()
