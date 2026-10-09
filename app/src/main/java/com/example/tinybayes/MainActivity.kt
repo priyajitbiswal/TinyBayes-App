@@ -56,10 +56,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import coil3.compose.AsyncImage
 import com.example.tinybayes.inference.TinyBayesClassifier
 import com.example.tinybayes.ui.theme.TinyBayesTheme
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -78,6 +80,7 @@ class MainActivity : ComponentActivity() {
     private var errorMessage by mutableStateOf<String?>(null)
 
     private var predictionJob: Job? = null
+    private var currentPhotoUri: Uri? = null
 
     private lateinit var classifier: TinyBayesClassifier
 
@@ -97,10 +100,53 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    private val cameraLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.TakePicture()
+        ) { success ->
+            if (success) {
+                val uri = currentPhotoUri
+                if (uri != null) {
+                    selectedImageUri = uri
+                    prediction = null
+                    confidence = null
+                    probabilities = emptyMap()
+                    remedy = null
+                    errorMessage = null
+                    runPrediction(uri, selectedCrop)
+                }
+            }
+        }
+
+    private fun launchCamera() {
+        try {
+            val photosDir = File(cacheDir, "camera_photos").apply { mkdirs() }
+            val photoFile = File(photosDir, "leaf_${System.currentTimeMillis()}.jpg")
+            val uri = FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.fileprovider",
+                photoFile
+            )
+            currentPhotoUri = uri
+            cameraLauncher.launch(uri)
+        } catch (e: Exception) {
+            errorMessage = "Unable to launch camera: ${e.message}"
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         enableEdgeToEdge()
+
+        if (savedInstanceState != null) {
+            currentPhotoUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                savedInstanceState.getParcelable(KEY_PHOTO_URI, Uri::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                savedInstanceState.getParcelable(KEY_PHOTO_URI)
+            }
+        }
 
         classifier = TinyBayesClassifier(this)
 
@@ -130,6 +176,9 @@ class MainActivity : ComponentActivity() {
                                 isPredicting = false
                             }
                         },
+                        onTakePhoto = {
+                            launchCamera()
+                        },
                         onChooseImage = {
                             galleryLauncher.launch("image/*")
                         }
@@ -137,6 +186,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        currentPhotoUri?.let { outState.putParcelable(KEY_PHOTO_URI, it) }
     }
 
     private fun loadBitmapWithExif(uri: Uri): Bitmap {
@@ -248,6 +302,10 @@ class MainActivity : ComponentActivity() {
         classifier.close()
         super.onDestroy()
     }
+
+    companion object {
+        private const val KEY_PHOTO_URI = "key_current_photo_uri"
+    }
 }
 
 @Composable
@@ -262,6 +320,7 @@ fun TinyBayesScreen(
     isPredicting: Boolean,
     errorMessage: String?,
     onCropSelected: (String) -> Unit,
+    onTakePhoto: () -> Unit,
     onChooseImage: () -> Unit
 ) {
     val crops = listOf(
@@ -357,11 +416,24 @@ fun TinyBayesScreen(
                         contentScale = ContentScale.Crop
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    OutlinedButton(
-                        onClick = onChooseImage,
-                        modifier = Modifier.fillMaxWidth()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Change Image")
+                        Button(
+                            onClick = onTakePhoto,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Take Photo")
+                        }
+                        OutlinedButton(
+                            onClick = onChooseImage,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Change Image")
+                        }
                     }
                 } else {
                     Box(
@@ -379,12 +451,24 @@ fun TinyBayesScreen(
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                        onClick = onChooseImage,
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Select Image")
+                        Button(
+                            onClick = onTakePhoto,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Take Photo")
+                        }
+                        OutlinedButton(
+                            onClick = onChooseImage,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Select Image")
+                        }
                     }
                 }
             }
@@ -674,6 +758,7 @@ fun TinyBayesPreview() {
             isPredicting = false,
             errorMessage = null,
             onCropSelected = {},
+            onTakePhoto = {},
             onChooseImage = {}
         )
     }
