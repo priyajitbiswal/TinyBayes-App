@@ -17,6 +17,7 @@
   - **Stage 1 (Gatekeeper)**: Pre-prediction verification model (77.3% validation accuracy) checks whether the leaf matches the selected crop, preventing misdiagnosis on wrong inputs.
   - **Stage 2 (Disease Diagnosis)**: Closed-form Jacobi-DMR head diagnoses the exact condition with full multi-class calibrated probabilities in < 1 ms.
 - **Embedded Agronomic Treatments**: Integrated treatment database renders cultural sanitation, biological antagonists, and chemical spray dosages directly on-device.
+- **In-App Camera Capture & Gallery Selection**: Supports direct camera snapshotting in the field using Android's native `FileProvider` (`ActivityResultContracts.TakePicture()`) as well as photo selection from local device storage (`ActivityResultContracts.GetContent()`).
 - **Robust Image Preprocessing**:
   - **EXIF Orientation Correction**: Automatically handles phone camera rotation metadata to ensure leaves are upright.
   - **Context-Preserving Scaling**: Full-image scaling to 224x224 (no center-cropping) preserves complete lesion outlines and natural background context.
@@ -105,14 +106,16 @@ TinyBayes-App/
 │   │   │   ├── crop_identifier_coefficients.json      # Gatekeeper crop verifier
 │   │   │   └── jacobi_coefficients.json               # Unified 5-crop coefficients & remedies
 │   │   ├── java/com/example/tinybayes/
-│   │   │   ├── MainActivity.kt                        # Jetpack Compose UI & image loading
+│   │   │   ├── MainActivity.kt                        # Jetpack Compose UI, camera & image loading
 │   │   │   ├── model/
 │   │   │   │   ├── OnnxFeatureExtractor.kt            # Image preprocessing & ONNX execution
 │   │   │   │   └── JacobiModel.kt                     # Jacobi-DMR dot products, Softmax & Remedies
 │   │   │   ├── inference/
 │   │   │   │   └── TinyBayesClassifier.kt             # Crop verification router & coordinator
 │   │   │   └── ui/theme/                              # Material 3 theme definitions
-│   │   └── AndroidManifest.xml
+│   │   ├── res/xml/
+│   │   │   └── file_paths.xml                         # FileProvider secure cache paths for camera
+│   │   └── AndroidManifest.xml                        # App configuration & FileProvider declaration
 │   └── build.gradle.kts                               # Dependencies & ABI splits configuration
 ├── gradle/                                            # Gradle wrapper & version catalogs
 ├── gradlew.bat / gradlew                              # Gradle build scripts

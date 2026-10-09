@@ -58,18 +58,22 @@ graph TD
 ```
 
 ### Pipeline Steps in Detail:
-1. **Image Preprocessing** ([`OnnxFeatureExtractor.kt`](app/src/main/java/com/example/tinybayes/model/OnnxFeatureExtractor.kt)):
+1. **Dual Image Acquisition**:
+   * **In-App Camera Capture**: Uses `ActivityResultContracts.TakePicture()` delegating to the native device camera. The capture is written directly to a secure timestamped temporary file in `cacheDir/camera_photos` managed by Android's `FileProvider` (`${applicationId}.fileprovider` defined in [`file_paths.xml`](app/src/main/res/xml/file_paths.xml)).
+   * **Local Gallery Selection**: Uses `ActivityResultContracts.GetContent()` for choosing existing saved images from the device gallery.
+   * State preservation: `currentPhotoUri` is safely retained across configuration changes in `onSaveInstanceState`.
+2. **Image Preprocessing** ([`OnnxFeatureExtractor.kt`](app/src/main/java/com/example/tinybayes/model/OnnxFeatureExtractor.kt)):
    * Resolves EXIF camera orientation using `ExifInterface` so sideways/inverted photos are properly oriented.
    * Direct bilinear resize to $224 \times 224$ (full-image preservation without cropping away diseased margins).
    * ImageNet normalization: $\frac{\text{pixel} / 255.0 - \text{mean}}{\text{std}}$ with $\mu=[0.485, 0.456, 0.406]$ and $\sigma=[0.229, 0.224, 0.225]$.
    * Channel transpose to NCHW float tensor: `[1, 3, 224, 224]`.
-2. **Crop Verification Check** ([`TinyBayesClassifier.kt:L61-L67`](app/src/main/java/com/example/tinybayes/inference/TinyBayesClassifier.kt#L61-L67)):
+3. **Crop Verification Check** ([`TinyBayesClassifier.kt:L61-L67`](app/src/main/java/com/example/tinybayes/inference/TinyBayesClassifier.kt#L61-L67)):
    * Gatekeeper evaluates features against all 5 crops.
    * If detected crop does not match the user's selected crop (`!cropCheck.className.equals(crop, ignoreCase = true)`):
      * Throws `CropMismatchException`.
      * UI catches this and renders an error card: *"Crop Mismatch: This image does not appear to belong to a [crop] leaf. Kindly select the correct leaf image."*
      * **Design Decision**: The app strictly blocks diagnosis and does not prompt automated cross-crop switching.
-3. **Jacobi-DMR Prediction** ([`JacobiModel.kt:L70-L119`](app/src/main/java/com/example/tinybayes/model/JacobiModel.kt#L70-L119)):
+4. **Jacobi-DMR Prediction** ([`JacobiModel.kt:L70-L119`](app/src/main/java/com/example/tinybayes/model/JacobiModel.kt#L70-L119)):
    * Retrieves the crop's section from `models/jacobi_coefficients.json`.
    * Computes dot products: $z_c = \sum_{i=0}^{575} x_i \cdot \beta_{c,i}$.
    * Stabilized softmax: $P(c) = \frac{\exp(z_c - z_{\max})}{\sum_j \exp(z_j - z_{\max})}$.
@@ -81,6 +85,7 @@ graph TD
 
 * **[`MainActivity.kt`](app/src/main/java/com/example/tinybayes/MainActivity.kt)**:
   * Pure Jetpack Compose single-activity interface.
+  * Dual image acquisition: Native camera capture (`cameraLauncher`) via `FileProvider` and local storage image picker (`galleryLauncher`).
   * Crop selector tabs (Cocoa, Cotton, Potato, Rice, Tomato).
   * Portrait orientation locked via AndroidManifest (`screenOrientation="portrait"`).
   * Auto-deselection behavior: Changing the active crop automatically clears the current image and previous diagnosis.
