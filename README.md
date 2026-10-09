@@ -7,17 +7,19 @@
 ## Features
 
 - **100% Offline Edge Inference**: No cloud APIs, data transmission, or network required. All inference runs locally in milliseconds using ONNX Runtime.
-- **5 Supported Crop Types**:
-  - **Potato** (Early Blight, Late Blight, Healthy)
-  - **Cotton** (Bacterial Blight, Curl Virus, Fusarium Wilt, Healthy)
-  - **Rice** (Brown Spot, Healthy, Hispa, Leaf Blast)
-  - **Tomato** (10 conditions including Blights, Molds, Viruses, and Healthy)
-  - **Cocoa** (Anthracnose, CSSVD, Healthy)
-- **Mathematical Parity with Research Notebooks**: Achieves **100.0% prediction agreement** against the original Jupyter research pipeline across 4,384 benchmark validation images with zero discrepancies.
-- **Calibrated Softmax Probabilities**: Displays true confidence percentages (`0.0%` to `100.0%`) alongside full multi-class probability rankings.
+- **5 Supported Crop Types (27 Diagnostic Classes)**:
+  - **Potato** (3 classes: Early Blight, Late Blight, Healthy)
+  - **Cotton** (7 classes: Bacterial Blight, Curl Virus, Fusarium Wilt, Healthy, Leaf Hopper / Jassids, Leaf Redding, Leaf Variegation)
+  - **Rice** (6 classes: Bacterial Leaf Blight, Brown Spot, Healthy, Leaf Blast, Leaf Scald, Sheath Blight)
+  - **Tomato** (8 classes: Bacterial Spot, Early Blight, Healthy, Late Blight, Leaf Mold, Mosaic Virus, Septoria Spot, Yellow Virus)
+  - **Cocoa** (3 classes: Anthracnose, CSSVD, Healthy)
+- **Two-Stage Intelligent Pipeline**:
+  - **Stage 1 (Gatekeeper)**: Pre-prediction verification model (77.3% validation accuracy) checks whether the leaf matches the selected crop, preventing misdiagnosis on wrong inputs.
+  - **Stage 2 (Disease Diagnosis)**: Closed-form Jacobi-DMR head diagnoses the exact condition with full multi-class calibrated probabilities in < 1 ms.
+- **Embedded Agronomic Treatments**: Integrated treatment database renders cultural sanitation, biological antagonists, and chemical spray dosages directly on-device.
 - **Robust Image Preprocessing**:
   - **EXIF Orientation Correction**: Automatically handles phone camera rotation metadata to ensure leaves are upright.
-  - **Aspect-Ratio Preservation**: Center-crops rectangular photos to square frames to prevent squashing or distorting lesion geometry.
+  - **Context-Preserving Scaling**: Full-image scaling to 224x224 (no center-cropping) preserves complete lesion outlines and natural background context.
   - **Memory-Safe Downsampling**: Safely decodes multi-megapixel phone images without out-of-memory crashes.
 - **Native Material 3 UI**: Clean, responsive interface built with Jetpack Compose, supporting both Light and Dark modes.
 - **Optimized APK Size**: Configured with ABI splits to produce a lean **~46 MB** APK for physical phones (down from ~150 MB).
@@ -26,16 +28,16 @@
 
 ## Validation Accuracy
 
-Validated image-by-image on disk comparing the Android inference pipeline against the Jupyter research notebooks:
+Evaluated across the 16,438-image active dataset (curated from PlantDoc field photography and TinyBayes benchmarks) using a strict stratified 80/20 train/validation split:
 
-| Crop | Validation Dataset Size | Notebook Accuracy | Android App Accuracy | Prediction Agreement |
+| Crop | Diagnostic Classes | Validation Split | Jacobi-DMR Accuracy | On-Device Latency |
 | :--- | :---: | :---: | :---: | :---: |
-| **Potato** | 431 images | **98.61%** | **98.61%** | **100.0%** (0 discrepancies) |
-| **Cotton** | 428 images | **94.39%** | **94.39%** | **100.0%** (0 discrepancies) |
-| **Rice** | 420 images | **94.05%** | **94.05%** | **100.0%** (0 discrepancies) |
-| **Tomato** | 2,000 images | **94.50%** | **94.50%** | **100.0%** (0 discrepancies) |
-| **Cocoa** | 1,105 images | **81.27%** | **81.27%** | **100.0%** (0 discrepancies) |
-| **Total** | **4,384 images** | **91.51%** | **91.51%** | **100.0%** (0 discrepancies) |
+| **Cotton** | 7 classes | 714 images | **94.82%** | < 1 ms |
+| **Rice** | 6 classes | 766 images | **86.81%** | < 1 ms |
+| **Potato** | 3 classes | 172 images | **85.47%** | < 1 ms |
+| **Cocoa** | 3 classes | 1,105 images | **82.71%** | < 1 ms |
+| **Tomato** | 8 classes | 533 images | **76.17%** | < 1 ms |
+| **Overall** | **27 Classes** | **3,290 images** | **~85.20% (Average)** | **~30 ms End-to-End** |
 
 ---
 
@@ -48,7 +50,7 @@ Validated image-by-image on disk comparing the Android inference pipeline agains
                      [ EXIF Rotation & Safe Downsampling ]
                                          │
                                          ▼
-                        [ Center-Square Crop & 224x224 ]
+                         [ Full-Image Resize to 224x224 ]
                                          │
                                          ▼
                         [ ImageNet Normalization (sRGB) ]
@@ -58,14 +60,22 @@ Validated image-by-image on disk comparing the Android inference pipeline agains
                                (576-dim Embeddings)
                                          │
                                          ▼
-                     [ Jacobi-DMR Linear Inference (Offline) ]
-                             Scores = X · β_class
+                   [ Stage 1: Crop Identifier Verification ]
+                       (Validates Leaf Matches Selected Crop)
                                          │
-                                         ▼
-                       [ Numerically Stable Softmax ]
-                                         │
-                                         ▼
-                   [ Predicted Class & Probability Distribution ]
+                     ┌───────────────────┴───────────────────┐
+                     ▼                                       ▼
+            [ Mismatch Detected ]                   [ Crop Verified ]
+         Show Error & Block Flow                             │
+                                                             ▼
+                                          [ Stage 2: Jacobi-DMR Linear Inference ]
+                                                   Scores = X · β_class
+                                                             │
+                                                             ▼
+                                                [ Numerically Stable Softmax ]
+                                                             │
+                                                             ▼
+                                            [ Prediction, Probabilities & Remedy ]
 ```
 
 ### 1. Feature Extractor
